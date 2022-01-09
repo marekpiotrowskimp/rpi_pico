@@ -36,6 +36,7 @@ from pms7003 import Pms7003
 from dht import DHT11
 from effect import Effect
 from images import ImagesTool
+from wifi import WIFI
 
 i2c = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
 devices = i2c.scan()
@@ -85,6 +86,9 @@ effect = Effect(ssd, 5, 125, 70, 80, screens.PIXELS, screens.ICON, screens.BLACK
 gc.collect()
 micropython.mem_info()
 
+uart = UART(1, baudrate=115200, tx=Pin(4), rx=Pin(5), bits=8, parity=None, stop=1)
+wifi = WIFI(uart)
+
 timestamp = time.ticks_ms()
 frame = 0
 while True:
@@ -96,6 +100,7 @@ while True:
     pms.update(ssd, 160, 120, screens.TERMINAL, screens.BLACK)
     effect.update()
     ssd.show()
+    wifi.receive()
     frame += 1
     if time.ticks_ms() - timestamp > 1000:
         timestamp = time.ticks_ms()

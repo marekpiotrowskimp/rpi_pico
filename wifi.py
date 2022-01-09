@@ -67,15 +67,16 @@ class WIFI(object):
             print(response)
             
     def send_data(self, connection, data):
-        command = str(self.ATCIPSEND, 'utf-8') + str(chr(connection)) + "," + str(len(data)) + "\r\n"
+        command = str(self.ATCIPSEND, 'utf-8') + str(connection) + "," + str(len(data)) + "\r\n"
         print(command)
         self.uart.write(command)
-        print(self.read())
+        time.sleep_ms(200)
+        #print(self.read())
         self.uart.write(data)
     
     def close_connection(self, connection):
         self.uart.write(self.ATCIPCLOSE)
-        self.uart.write(chr(connection))
+        self.uart.write(str(connection))
         self.uart.write(b'\r\n')
     
     def receive(self):
@@ -87,12 +88,31 @@ class WIFI(object):
                 con = int(str(buf[0])) - 48
                 self.connections.append((con,"START"))
                 print(self.connections)
+               # self.close_connection(con)
             if buf.find(b'CLOSED') != -1:
                 con = int(str(buf[0])) - 48
                 self.connections.append((con,"END"))
                 print(self.connections)
-            if buf.find(b'+IPD') != -1 and buf.find(b'GET') != -1 and buf.find(b'HTTP') != -1:
-                connection = buf[5]
+            if buf.find(b'+IPD') != -1 and buf.find(b'GET') != -1 and buf.find(b'HTTP') != -1 and buf.find(b'favicon.ico') != -1:
+                connection = int(str(buf[5])) - 48
+                count = int(buf[7:buf.find(b':GET')])
+                count -= (len(buf) - buf.find(b':GET'))
+                print("html " + str(count))
+                while count > 0:
+                    count -= 1
+                    self.uart.read()
+                print("all")
+                self.close_connection(connection)
+            if buf.find(b'+IPD') != -1 and buf.find(b'GET') != -1 and buf.find(b'HTTP') != -1 and buf.find(b'favicon.ico') == -1:
+                count = int(buf[7:buf.find(b':GET')])
+                count -= (len(buf) - buf.find(b':GET'))
+                print("html " + str(count))
+                while count > 0:
+                    count -= 1
+                    self.uart.read()
+                print("all")
+                time.sleep_ms(100)
+                connection = int(str(buf[5])) - 48
                 with open('html.txt') as f:
                     lines = f.readlines()
                     data = ""
@@ -100,6 +120,7 @@ class WIFI(object):
                         data += line
                     f.close()
                 self.send_data(connection, data)
+                time.sleep_ms(150)
                 self.close_connection(connection)
             
          
