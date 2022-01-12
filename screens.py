@@ -15,6 +15,13 @@ class ScreensRpi:
         self.ICON = 15
         self.icons = icons
         
+    def booting_screen(self):
+        self.ssd.fill(self.BLACK)
+        #self.ssd.fill_rect(10, 10, 300, 40, self.GRAY)
+        #self.ssd.text('Raspberry PI Pico version 0.1', 20, 20, self.TEXT)
+        self.ssd.text('Booting...', 0, 0, self.TERMINAL)
+        self.buttons = Buttons(self.ssd)
+        
     def initial_screen(self, image_action, buzzer_action):
         self.ssd.fill(self.BLACK)
         #self.ssd.fill_rect(10, 10, 300, 40, self.GRAY)

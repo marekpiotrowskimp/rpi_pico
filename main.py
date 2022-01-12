@@ -23,6 +23,7 @@ micropython.mem_info()
 spi = getSPI(True)
 irq = Pin(TP_IRQ, Pin.IN, Pin.PULL_UP)
 ssd = SSD(spi, dc=pdc, cs=pcs, rst=prst, tp_cs = Pin(TP_CS, Pin.OUT), irq = irq, height=240, width=320, disp_mode=6)
+ssd.show()
 gc.collect()
 micropython.mem_info()
 
@@ -37,6 +38,7 @@ from dht import DHT11
 from effect import Effect
 from images import ImagesTool
 from wifi import WIFI
+import json
 
 i2c = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
 devices = i2c.scan()
@@ -64,6 +66,13 @@ def buzzer_action():
 buz = Buzzer(125)
 
 icons = ImagesTool(ssd)
+screens = ScreensRpi(ssd, icons)
+screens.booting_screen()
+ssd.show()
+
+uart = UART(1, baudrate=115200, tx=Pin(4), rx=Pin(5), bits=8, parity=None, stop=1)
+wifi = WIFI(uart, ssd, screens.TERMINAL)
+
 #icons.transform_icon("clock.data","clock64.data", 64, 64, 4)
 icons.load_icon("humidity64.data", 64, 64, 0x0F)
 icons.load_icon("temperature64.data", 64, 64, 0x0F)
@@ -73,7 +82,6 @@ icons.load_icon("pressure64.data", 64, 64, 0x0F)
 icons.load_icon("sun64.data", 64, 64, 0x0F)
 icons.load_icon("clock64.data", 64, 64, 0x0F)
 
-screens = ScreensRpi(ssd, icons)
 screens.initial_screen(image_action, buzzer_action)
 
 pms = Pms7003(uart=0)
@@ -86,21 +94,22 @@ effect = Effect(ssd, 5, 125, 70, 80, screens.PIXELS, screens.ICON, screens.BLACK
 gc.collect()
 micropython.mem_info()
 
-uart = UART(1, baudrate=115200, tx=Pin(4), rx=Pin(5), bits=8, parity=None, stop=1)
-wifi = WIFI(uart)
+def get_json():
+    obj = {"date": clock.formatter_date(clock.date_time), "time": clock.formatter_time(clock.date_time), "preasure": preasure.Preasure, "humidity": sensor.humidity, "temperature": sensor.temperature, "pms": pms.pms_data}
+    return json.dumps(obj)
 
 timestamp = time.ticks_ms()
 frame = 0
 while True:
     screens.update(getSPI)
-    preasure.update(240, 70, screens.TERMINAL, screens.BLACK)
-    clock.update(0, 70, screens.TERMINAL, screens.BLACK)
-    sensor.update(ssd, 80, 70, screens.TERMINAL, screens.BLACK)
+    preasure.update(240, 70, screens.TERMINAL, screens.BLACK, screens.ICON)
+    clock.update(0, 70, screens.TERMINAL, screens.BLACK, screens.ICON)
+    sensor.update(ssd, 80, 70, screens.TERMINAL, screens.BLACK, screens.ICON)
     #buz.update()
     pms.update(ssd, 160, 120, screens.TERMINAL, screens.BLACK)
     effect.update()
     ssd.show()
-    wifi.receive()
+    wifi.receive(get_json())
     frame += 1
     if time.ticks_ms() - timestamp > 1000:
         timestamp = time.ticks_ms()

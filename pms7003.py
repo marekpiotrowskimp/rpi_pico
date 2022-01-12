@@ -33,6 +33,7 @@ class Pms7003:
     timestamp = 0
 
     def __init__(self, uart):
+        self.pms_data = None
         self.uart = machine.UART(uart, baudrate=9600, bits=8, parity=None, stop=1)
 
     def __repr__(self):
@@ -112,6 +113,7 @@ class Pms7003:
             self.timestamp = time.ticks_ms()
             data = self.read()
             if data != None:
+                self.pms_data = data
                 ssd.fill_rect(x, y - 5, 160, 95, background)
                 ssd.text("PM1_0  " + str(data['PM1_0']), x, y, color)
                 ssd.text("PM2_5  " + str(data['PM2_5']), x, y + 10, color)

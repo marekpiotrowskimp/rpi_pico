@@ -112,7 +112,18 @@ class DHT11:
             return False
         return True
     
-    def update(self, ssd, x, y, color, background):
+    def draw(self, ssd, x, y, background, temperature_color):
+        center_x = x + 32 + 92
+        center_y = y - 38
+        ssd.fill_rect(center_x - 16, center_y - 23, 8, 36, background)
+        temp_div = 36 - int(((self.temperature + 10) / 50) * 36) # -10 : 40
+        if temp_div > 36:
+            temp_div = 36
+        if temp_div < 0:
+            temp_div = 0
+        ssd.fill_rect(center_x - 14, center_y - 23 + temp_div, 4, 36 - temp_div, temperature_color)
+    
+    def update(self, ssd, x, y, color, background, temperature_color):
         if time.ticks_ms() - self.timestamp > 5000:
             self.timestamp = time.ticks_ms()
             humidity = self.humidity
@@ -120,4 +131,5 @@ class DHT11:
             ssd.fill_rect(x, y - 5, 150, 35, background)
             ssd.text(str(temperature) + "C", x + 92, y, color)
             ssd.text(str(int(humidity)) + "%", x + 31, y, color)
+            self.draw(ssd, x, y, background, temperature_color)
 

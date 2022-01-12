@@ -25,22 +25,46 @@ class WIFI(object):
 
     connections = []
     
-    def __init__(self, uart):
+    def __init__(self, uart, ssd, color):
+        self.progress = ""
         self.uart = uart
+        self.show_progress(ssd, color)
         self.send_cmd(self.AT)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATEOFF)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATCWMODE)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATCIPMODE)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATCIPMUX)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATRFPOWER)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATJAP)
+        self.show_progress(ssd, color)
         time.sleep_ms(1500)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATCIPSERVERCLOSE)
+        self.show_progress(ssd, color)
         time.sleep_ms(1500)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATCIPSERVER)
+        self.show_progress(ssd, color)
         time.sleep_ms(200)
+        self.show_progress(ssd, color)
         self.send_cmd(self.ATCIPSTA)
+        self.show_progress(ssd, color)
+        self.progress += " [END]"
+        ssd.text(self.progress, 0, 12, color)
+        ssd.show()
         time.sleep_ms(200)
+
+        
+    def show_progress(self, ssd, color):
+        self.progress += "#"
+        ssd.text(self.progress, 0, 12, color)
+        ssd.show()
         
     def read(self):
         char = self.uart.read(1)
@@ -79,7 +103,7 @@ class WIFI(object):
         self.uart.write(str(connection))
         self.uart.write(b'\r\n')
     
-    def receive(self):
+    def receive(self, data_json):
         buf = "OK"
         buf = self.uart.readline()
         if not buf is None:
@@ -96,16 +120,17 @@ class WIFI(object):
             if buf.find(b'+IPD') != -1 and buf.find(b'GET') != -1 and buf.find(b'HTTP') != -1 and buf.find(b'favicon.ico') != -1:
                 connection = int(str(buf[5])) - 48
                 count = int(buf[7:buf.find(b':GET')])
-                count -= (len(buf) - buf.find(b':GET'))
+                count -= (len(buf) - buf.find(b':GET') - 1)
                 print("html " + str(count))
                 while count > 0:
                     count -= 1
                     self.uart.read()
                 print("all")
+                time.sleep_ms(550)
                 self.close_connection(connection)
             if buf.find(b'+IPD') != -1 and buf.find(b'GET') != -1 and buf.find(b'HTTP') != -1 and buf.find(b'favicon.ico') == -1:
                 count = int(buf[7:buf.find(b':GET')])
-                count -= (len(buf) - buf.find(b':GET'))
+                count -= (len(buf) - buf.find(b':GET') - 1)
                 print("html " + str(count))
                 while count > 0:
                     count -= 1
@@ -119,9 +144,13 @@ class WIFI(object):
                     for line in lines:
                         data += line
                     f.close()
-                self.send_data(connection, data)
-                time.sleep_ms(150)
+                self.send_data(connection, data_json)
+                time.sleep_ms(550)
                 self.close_connection(connection)
-            
+            if buf.find(b'+IPD') != -1 and buf.find(b'state') != -1:
+                connection = int(str(buf[5])) - 48
+                self.send_data(connection, data_json)
+                time.sleep_ms(550)
+                self.close_connection(connection)
          
 

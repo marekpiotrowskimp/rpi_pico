@@ -1,5 +1,6 @@
 from micropython import const
 import time
+import math
 
 class Clock:
     address = const(0x68)
@@ -74,10 +75,30 @@ class Clock:
     def formatter_date(self, date_time):
         return self.date_format.format(self.str2digits(date_time[4]), self.str2digits(date_time[5]), self.str2digits(date_time[6]))
     
-    def update(self,  x, y, color, background):
+    def clock_tick(self, x, y, background, clock_color):
+        center_x = x + 32
+        center_y = y - 38
+        self.ssd.fill_rect(center_x - 16, center_y - 16, 33, 33, background)
+        self.draw_hand(center_x, center_y, 16, self.date_time[0], clock_color)
+        self.draw_hand(center_x, center_y, 14, self.date_time[1], clock_color)
+        self.draw_hand(center_x, center_y, 10, self.date_time[2], clock_color, self.date_time[1])
+        
+    def draw_hand(self, center_x, center_y, arm, data, clock_color, div=-1):
+        tick = self.bcd_to_int(data)
+        if div >= 0:
+            tick = tick * 5 + self.bcd_to_int(div) / 24
+        angle = (math.pi / 30) * tick - math.pi / 2
+        cal_x = int(math.cos(angle) * arm + center_x)
+        cal_y = int(math.sin(angle) * arm + center_y)
+        self.ssd.line(center_x, center_y, cal_x, cal_y, clock_color)
+        
+    def update(self,  x, y, color, background, clock_color):
         if time.ticks_ms() - self.timestamp > 250:
             self.timestamp = time.ticks_ms()
             self.read()
             self.ssd.fill_rect(x, y - 5, 70, 25, background)
             self.ssd.text(self.formatter_date(self.date_time), x, y, color)
             self.ssd.text(str(self.formatter_time(self.date_time)), x, y + 10, color)
+            self.clock_tick(x, y, background, clock_color)
+            
+            
