@@ -26,10 +26,11 @@ TP_IRQ   = 17
 def _lcopy(dest:ptr16, source:ptr8, lut:ptr8, length:int):
     n = 0
     for x in range(length):
-        c = source[x]
-        dest[n] = (lut[(c >> 4) * 2] << 8) + lut[(c >> 4) * 2 + 1]
+        ind1 = (source[x] & 0xF0) >> 3
+        ind2 = (source[x] << 1) & 0x0F
+        dest[n] = (lut[ind1] << 8) | lut[ind1 + 1]
         n += 1
-        dest[n] = (lut[(c * 2) & 0x0F] << 8) + lut[(c & 0x0F) * 2 + 1]
+        dest[n] = (lut[ind2] << 8) | lut[ind2 + 1]
         n += 1
 
 class ST7789(framebuf.FrameBuffer):
@@ -82,17 +83,15 @@ class ST7789(framebuf.FrameBuffer):
         self.set_palette(10, self.rgb(0xFF, 0xFF, 0xFF))
         self.set_palette(11, self.rgb(0xFF, 0xFF, 0xFF))
         self.set_palette(12, self.rgb(0xFF, 0xFF, 0xFF))
-        self.set_palette(13, self.rgb(0xFF, 0xFF, 0xFF))
-        self.set_palette(14, self.rgb(0xFF, 0xFF, 0xFF))
+        self.set_palette(13, self.rgb(0xAA, 0xFF, 0xAA))
+        self.set_palette(14, self.rgb(0xFF, 0xAA, 0xAA))
         self.set_palette(15, self.rgb(0x00, 0xFF, 0xFF))
-        for col in self.lut:
-            print(hex(col))
         
     def set_palette(self, idx, color):
         #self.lut.append(color)
         #self.lut[idx] = color
         self.lut[idx * 2] = (color >> 8) & 0xFF
-        self.lut[idx *2 + 1] = color & 0xFF
+        self.lut[idx * 2 + 1] = color & 0xFF
         #print(hex(color), hex(lut[col_index]), hex(lut[col_index + 1]))
 
     def _hwreset(self):

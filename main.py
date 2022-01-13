@@ -71,7 +71,7 @@ screens.booting_screen()
 ssd.show()
 
 uart = UART(1, baudrate=115200, tx=Pin(4), rx=Pin(5), bits=8, parity=None, stop=1)
-wifi = WIFI(uart, ssd, screens.TERMINAL)
+wifi = WIFI(uart, ssd, screens.TERMINAL, screens.BLACK)
 
 #icons.transform_icon("clock.data","clock64.data", 64, 64, 4)
 icons.load_icon("humidity64.data", 64, 64, 0x0F)
@@ -103,11 +103,12 @@ frame = 0
 while True:
     screens.update(getSPI)
     preasure.update(240, 70, screens.TERMINAL, screens.BLACK, screens.ICON)
-    clock.update(0, 70, screens.TERMINAL, screens.BLACK, screens.ICON)
+    clock.update(0, 70, screens.TERMINAL, screens.BLACK, screens.ICON, screens.HOUR, screens.MINUTS)
     sensor.update(ssd, 80, 70, screens.TERMINAL, screens.BLACK, screens.ICON)
     #buz.update()
     pms.update(ssd, 160, 120, screens.TERMINAL, screens.BLACK)
-    effect.update()
+    if pms.pms_data != None:
+        effect.update(pms.pms_data['PM10_0'])
     ssd.show()
     wifi.receive(get_json())
     frame += 1

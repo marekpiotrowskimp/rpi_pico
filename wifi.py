@@ -24,46 +24,54 @@ class WIFI(object):
     ATCIPSTAMAC = b'AT+CIPSTAMAC?'
 
     connections = []
+    commands = []
     
-    def __init__(self, uart, ssd, color):
+    def __init__(self, uart, ssd, color, background):
         self.progress = ""
         self.uart = uart
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.AT)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATEOFF)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATCWMODE)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATCIPMODE)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATCIPMUX)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATRFPOWER)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATJAP)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         time.sleep_ms(1500)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATCIPSERVERCLOSE)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         time.sleep_ms(1500)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATCIPSERVER)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         time.sleep_ms(200)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.send_cmd(self.ATCIPSTA)
-        self.show_progress(ssd, color)
+        self.show_progress(ssd, color, background)
         self.progress += " [END]"
         ssd.text(self.progress, 0, 12, color)
         ssd.show()
-        time.sleep_ms(200)
+        time.sleep_ms(350)
 
         
-    def show_progress(self, ssd, color):
+    def show_progress(self, ssd, color, background):
         self.progress += "#"
         ssd.text(self.progress, 0, 12, color)
+        ssd.fill_rect(0, 30, 320, 210, background)
+        index = 0
+        if len(self.commands) > 22:
+            self.commands = self.commands[len(self.commands) - 20:]
+        for com in self.commands:
+            ssd.text(com, 0, 30 + index * 10, color)
+            index += 1
         ssd.show()
         
     def read(self):
@@ -80,22 +88,23 @@ class WIFI(object):
         
          
     def send_cmd(self, cmd):
-        print(cmd)
+        self.commands.append(cmd[:len(cmd) - 2])
         self.uart.write(cmd)
         time.sleep_ms(150)
         response = self.read()
-        print(response)
+        if response != None and len(response) > 3:
+            self.commands.append(response[:len(response) - 2])
         while not response is None or (not response is None and response.contains("busy")):
             time.sleep_ms(250)
             response = self.read()
-            print(response)
+            if response != None and len(response) > 3:
+                self.commands.append(response[:len(response) - 2])
             
     def send_data(self, connection, data):
         command = str(self.ATCIPSEND, 'utf-8') + str(connection) + "," + str(len(data)) + "\r\n"
         print(command)
         self.uart.write(command)
         time.sleep_ms(200)
-        #print(self.read())
         self.uart.write(data)
     
     def close_connection(self, connection):

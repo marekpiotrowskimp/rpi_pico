@@ -26,14 +26,15 @@ class Preasure:
         self.draw_hand(center_x, center_y, 16, self.Preasure, preasure_color)
         
     def draw_hand(self, center_x, center_y, arm, data, preasure_color):
-        tick = int(((data - 900) / 150) * 30)
+        tick = int(((data - 950) / 100) * 30)
         angle = (math.pi / 30) * tick - math.pi
         cos = math.cos(angle)
         sin = math.sin(angle)
         cal_y = int(sin * arm + center_y)
         cal_x = int(cos * arm + center_x)
-        print(tick, angle, cos, sin, arm, cal_x, cal_y)
         self.ssd.line(center_x, center_y, cal_x, cal_y, preasure_color)
+        self.ssd.line(center_x - 1, center_y, cal_x - 1, cal_y, preasure_color)
+        self.ssd.line(center_x + 1, center_y, cal_x + 1, cal_y, preasure_color)
         
     def update(self, x, y, color, background, preasure_color):
         now = time.ticks_ms()

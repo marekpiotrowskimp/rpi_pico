@@ -12,6 +12,8 @@ class ScreensRpi:
         self.TEXT = 4 # ssd.rgb(0xEE, 0xEE, 0xEE)
         self.TERMINAL = 5 # ssd.rgb(0x00, 0xFF, 0x00)
         self.PIXELS = 6
+        self.MINUTS = 13
+        self.HOUR = 14
         self.ICON = 15
         self.icons = icons
         
