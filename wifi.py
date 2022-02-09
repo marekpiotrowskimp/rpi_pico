@@ -23,7 +23,6 @@ class WIFI(object):
     ATCIPSTA = b'AT+CIPSTA?\r\n'
     ATCIPSTAMAC = b'AT+CIPSTAMAC?'
 
-    connections = []
     commands = []
     
     def __init__(self, uart, ssd, color, background):
@@ -119,13 +118,10 @@ class WIFI(object):
             print(buf)
             if buf.find(b'CONNECT') != -1:
                 con = int(str(buf[0])) - 48
-                self.connections.append((con,"START"))
-                print(self.connections)
-               # self.close_connection(con)
+                print(str(con))
             if buf.find(b'CLOSED') != -1:
                 con = int(str(buf[0])) - 48
-                self.connections.append((con,"END"))
-                print(self.connections)
+                print(str(con))
             if buf.find(b'+IPD') != -1 and buf.find(b'GET') != -1 and buf.find(b'HTTP') != -1 and buf.find(b'favicon.ico') != -1:
                 connection = int(str(buf[5])) - 48
                 count = int(buf[7:buf.find(b':GET')])
