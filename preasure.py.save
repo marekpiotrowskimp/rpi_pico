@@ -26,7 +26,7 @@ class Preasure:
         self.draw_hand(center_x, center_y, 16, self.Preasure, preasure_color)
         
     def draw_hand(self, center_x, center_y, arm, data, preasure_color):
-        tick = int(((data - 970) / 60) * 30)
+        tick = int(((data - 970) / 60ź) * 30)
         angle = (math.pi / 30) * tick - math.pi
         cos = math.cos(angle)
         sin = math.sin(angle)
