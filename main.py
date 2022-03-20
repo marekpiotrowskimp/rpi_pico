@@ -47,7 +47,7 @@ if devices:
         print(hex(device))
 
 clock = Clock(ssd, i2c)
-#clock.setup(00,20,21,0,27,12,21)
+#clock.setup(00, 55, 16, 0, 20, 03, 22)
 
 preasure = Preasure(ssd, i2c)
 
@@ -70,7 +70,13 @@ screens = ScreensRpi(ssd, icons)
 screens.booting_screen()
 ssd.show()
 
-uart = UART(1, baudrate=115200, tx=Pin(4), rx=Pin(5), bits=8, parity=None, stop=1)
+sensor = 2
+if sensor == 1:
+    baudrate = 115200
+else:
+    baudrate = 57600
+
+uart = UART(1, baudrate=baudrate, tx=Pin(4), rx=Pin(5), bits=8, parity=None, stop=1)
 wifi = WIFI(uart, ssd, screens.TERMINAL, screens.BLACK)
 
 #icons.transform_icon("clock.data","clock64.data", 64, 64, 4)

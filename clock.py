@@ -49,16 +49,15 @@ class Clock:
             data = 0x80
         self.write(data, self.second)
     
-    def setup(self, second, minutes, hours, day_of_week, day, month, year):
-        print("setup")
+    def setup(self, second_c, minutes_c, hours_c, day_of_week_c, day_c, month_c, year_c):
         self.control(False)
-        self.write(self.prepare_data(year), self.year)
-        self.write(self.prepare_data(month), self.month)
-        self.write(self.prepare_data(day), self.day)
-        self.write(self.prepare_data(day_of_week), self.day_of_week)
-        self.write(self.prepare_data(hours, True), self.hours)
-        self.write(self.prepare_data(minutes), self.minutes)
-        self.write(self.prepare_data(second), self.second)
+        self.write(self.prepare_data(year_c), self.year)
+        self.write(self.prepare_data(month_c), self.month)
+        self.write(self.prepare_data(day_c), self.day)
+        self.write(self.prepare_data(day_of_week_c), self.day_of_week)
+        self.write(self.prepare_data(hours_c, True), self.hours)
+        self.write(self.prepare_data(minutes_c), self.minutes)
+        self.write(self.prepare_data(second_c), self.second)
     
     def read(self):
         self.date_time = self.i2c.readfrom_mem(self.address, 0x00, 7)
